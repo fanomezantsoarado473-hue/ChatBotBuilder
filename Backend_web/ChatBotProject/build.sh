@@ -1,15 +1,13 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# exit on error
+set -o errexit
 
-echo "🚀 Fanamboarana ny tetikasa ChatBotBuilder..."
-
-# Fametrahana ny fitaovana
-pip install --upgrade pip
+# Ampidira ny library rehetra
 pip install -r requirements.txt
 
-# Fanangonana ny static files
-python manage.py collectstatic --no-input
-
-# Fampiharana ny migration
+# Ataovy ny migration ny database
+python manage.py makemigrations
 python manage.py migrate
 
-echo "✅ Famonoana vita!"
+# Angony ny fichiers statiques (raha ilaina)
+python manage.py collectstatic --no-input
