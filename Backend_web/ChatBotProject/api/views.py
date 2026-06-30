@@ -36,8 +36,13 @@ from .pagination import CustomUserPagination
 tz_mada = zoneinfo.ZoneInfo("Indian/Antananarivo")
 
 # URL de l'API Groq
-GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_API_KEY = "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"
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+GROQ_API_URL = os.getenv("GROQ_API_URL")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 # ════════════════════════════════════════════════════════════════════
 # CHAT WITH AI
