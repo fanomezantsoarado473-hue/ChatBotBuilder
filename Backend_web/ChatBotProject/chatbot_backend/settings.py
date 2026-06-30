@@ -1,17 +1,23 @@
-﻿from pathlib import Path
+﻿import os
+from pathlib import Path
+import dj_database_url  # Ilaina raha hampiasa PostgreSQL any amin'ny Render (Azo install-ena: pip install dj-database-url)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep this secret in production!
-SECRET_KEY = 'django-insecure-change-this-key-in-production'
+# Maka avy amin'ny Render config, raha tsy misy dia mampiasa ilay default
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-this-key-in-production')
 
 # =========================
 # PRODUCTION SETTINGS
 # =========================
-DEBUG = False
+# Mivadika True raha ao amin'ny solosainao (tsy misy RENDER amin'ny env), mivadika False any amin'ny Render
+DEBUG = 'RENDER' not in os.environ
 
 ALLOWED_HOSTS = [
     ".onrender.com",
+    "localhost",
+    "127.0.0.1",
 ]
 
 # =========================
@@ -39,6 +45,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # ⚡ Ilaina mampiseho static files any amin'ny Render (pip install whitenoise)
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -68,18 +75,29 @@ TEMPLATES = [
 WSGI_APPLICATION = 'chatbot_backend.wsgi.application'
 
 # =========================
-# DATABASE (LOCAL - KEEP FOR DEV)
+# DATABASE (SMART DEV / PROD SWITCH)
 # =========================
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'boltchat',
-        'USER': 'postgres',
-        'PASSWORD': 'rado1234',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+if 'RENDER' in os.environ:
+    # Any amin'ny Render: Raha nampiditra DATABASE_URL ianao dia iny no miasa, raha tsy izany dia SQLite vonjimaika
+    DATABASES = {
+    'default': dj_database_url.config(
+        # Raha ao an-trano (local), dia ity PostgreSQL-nao ity no miasa:
+        default='postgresql://postgres:rado1234@localhost:5432/boltchat',
+        conn_max_age=600
+    )
 }
+else:
+    # Ao amin'ny solosainao (Local Dev): Ny PostgreSQL-nao mahazatra no miasa
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'boltchat',
+            'USER': 'postgres',
+            'PASSWORD': 'rado1234',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
 
 # =========================
 # INTERNATIONALIZATION
@@ -94,6 +112,9 @@ USE_TZ = True
 # =========================
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Fanamorana ny static files ho an'ny Render
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # =========================
 # DEFAULT AUTO FIELD
